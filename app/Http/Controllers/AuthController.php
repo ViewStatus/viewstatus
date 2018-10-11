@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\User;
+use App\Notifications\UserActivation;
+
 class AuthController extends Controller
 {
     /**
@@ -20,14 +22,18 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|confirmed'
+            'password' => 'required|string|confirmed',
         ]);
         $user = new User([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password),
+            'activation_token' => str_random(60)
         ]);
         $user->save();
+
+        $user->notify(new SignupActivate($user));
+
         return response()->json([
             'message' => 'Successfully created user!'
         ], 200);
@@ -50,16 +56,23 @@ class AuthController extends Controller
             'password' => 'required|string',
             'remember_me' => 'boolean'
         ]);
+
         $credentials = request(['email', 'password']);
-        if(!Auth::attempt($credentials))
+        $credentials['active'] = 1;
+        $credentials['deleted_at'] = null;
+
+        if(!Auth::attempt($credentials)) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);
+        }
+
         $user = $request->user();
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->token;
-        if ($request->remember_me)
+        if ($request->remember_me) {
             $token->expires_at = Carbon::now()->addWeeks(1);
+        }
         $token->save();
         return response()->json([
             'access_token' => $tokenResult->accessToken,
@@ -81,5 +94,28 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Successfully logged out'
         ]);
+    }
+
+    /**
+     * Activate User
+     * 
+     * @param [string] token
+     * @return [resource] user
+     */
+    public function activate($token)
+    {
+        $user = User::where('activation_token', $token)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'This activation token is invalid.'
+            ], 404);
+        }
+
+        $user->active = true;
+        $user->activation_token = '';
+        $user->save();
+
+        return $user;
     }
 }
