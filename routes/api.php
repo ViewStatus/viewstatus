@@ -26,3 +26,13 @@ Route::group([
         Route::get('logout', 'AuthController@logout');
     });
 });
+
+Route::group([    
+    'namespace' => 'Auth',    
+    'middleware' => 'api',    
+    'prefix' => 'password'
+], function () {    
+    Route::post('create', 'PasswordResetController@create');
+    Route::get('reset/{token}', 'PasswordResetController@get_reset');
+    Route::post('reset', 'PasswordResetController@post_reset');
+});
