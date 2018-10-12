@@ -14,3 +14,5 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::any('/dashboard/{any?}', 'SpaController@index')->where('any', '.*');
