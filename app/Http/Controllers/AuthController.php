@@ -32,7 +32,7 @@ class AuthController extends Controller
         ]);
         $user->save();
 
-        $user->notify(new SignupActivate($user));
+        $user->notify(new UserActivation($user));
 
         return response()->json([
             'message' => 'Successfully created user!'
@@ -114,6 +114,7 @@ class AuthController extends Controller
 
         $user->active = true;
         $user->activation_token = '';
+        $user->email_verified_at = Carbon::now()->toDateTimeString();
         $user->save();
 
         return $user;
