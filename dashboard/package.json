@@ -19,6 +19,7 @@
     "@vue/eslint-config-airbnb": "^3.0.5",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",
+    "tailwindcss": "^0.6.6",
     "vue-template-compiler": "^2.5.17"
   },
   "eslintConfig": {
@@ -37,6 +38,7 @@
   },
   "postcss": {
     "plugins": {
+      "tailwindcss": "./tailwind.js",
       "autoprefixer": {}
     }
   },

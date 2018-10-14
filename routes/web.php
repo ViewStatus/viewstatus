@@ -14,5 +14,6 @@
 Route::get('/', function () {
     return view('welcome');
 });
-
+Route::any('/dashboard/signup', 'SpaController@index')->name('register');
+Route::any('/dashboard/login', 'SpaController@index')->name('login');
 Route::any('/dashboard/{any?}', 'SpaController@index')->where('any', '.*');
